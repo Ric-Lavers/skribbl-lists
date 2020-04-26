@@ -1,0 +1,23 @@
+{
+  "name": "skribbl-lists",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Ric-Lavers <ric_lavers@outlook.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "APP_ENV=development nodemon ./src/index.js --exec babel-node -e js"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-flow": "^6.23.0",
+    "babel-preset-stage-0": "^6.24.1",
+    "flow-bin": "^0.73.0",
+    "nodemon": "^1.12.1"
+  },
+  "dependencies": {
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "xstate": "^4.9.1"
+  }
+}

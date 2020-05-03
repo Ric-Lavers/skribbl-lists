@@ -1,15 +1,11 @@
-import { Machine, assign } from "Xstate";
-
-import { getWordByGroup } from "../services";
-import { getGroupName } from "../utils";
+// https://xstate.js.org/viz/?gist=469032a40c65d4f2532d4838c4191c9a&groupName=test
+const { assign, Machine } = XState;
 
 const getGroupName = location.hash && location.hash.slice(1);
 const getWordByGroup = (groupName = "test") => {
   return fetch(
     `http://localhost:8080/skibbl/group-words?groupName=${groupName}`
-  )
-    .then((response) => response.json())
-    .catch((err) => console.error(err.message));
+  ).then((response) => response.json());
 };
 
 const addWord = (word, groupName) => {
@@ -21,16 +17,34 @@ const addWord = (word, groupName) => {
         word,
       }),
     }
-  )
-    .then((response) => response.json())
-    .catch((err) => console.error(err.message));
+  ).then((response) => response.json());
 };
+async function copy(txt) {
+  if (!navigator.clipboard) return;
+
+  try {
+    await navigator.clipboard.writeText(txt);
+  } catch (err) {
+    console.error("Failed to copy!", err);
+  }
+}
 
 const newGroup = {
   initial: "idle",
   states: {
-    idle: {},
-    loading: {},
+    idle: {
+      on: {
+        NEW_GROUP: {
+          target: "done",
+          actions: (ctx, { groupName }) => {
+            console.log(`redirect to ${groupName}`);
+          },
+        },
+      },
+    },
+    done: {
+      type: "final",
+    },
   },
 };
 
@@ -39,7 +53,7 @@ const entering = {
   states: {
     idle: {
       on: {
-        FETCH: {
+        POST_WORD: {
           target: "loading",
           actions: assign((context, { word }) => {
             return {
@@ -56,12 +70,7 @@ const entering = {
         src: "invokeAddWordToGroup",
         onDone: {
           target: "idle",
-          actions: assign((context, event) => {
-            return {
-              word: "",
-              words: event.data,
-            };
-          }),
+          actions: "reset",
         },
         onError: {
           target: "failure",
@@ -76,10 +85,16 @@ const entering = {
 
     failure: {
       on: {
-        "": {
-          target: "loading",
-          cond: ({ failCount }) => failCount < 3,
-        },
+        "": [
+          {
+            target: "loading",
+            cond: ({ failCount }) => failCount < 3,
+          },
+          {
+            target: "#skibbl.error",
+            cond: ({ failCount }) => failCount >= 3,
+          },
+        ],
       },
     },
     done: {
@@ -88,10 +103,54 @@ const entering = {
   },
 };
 
-const fetchListsMachine = Machine(
+const intitalFetch = {
+  invoke: {
+    id: "fetch-group",
+    autoForward: true,
+    src: "invokeGetWordByGroup",
+    onDone: {
+      target: "entering",
+      actions: assign((context, event) => {
+        return {
+          words: event.data,
+        };
+      }),
+    },
+    onError: {
+      target: "error",
+    },
+  },
+};
+
+const listToClipBoard = {
+  initial: "loading",
+  states: {
+    loading: {
+      invoke: {
+        src: "invokeGetWordByGroup",
+        onDone: {
+          target: "onClipBoard",
+          actions: assign((context, event) => {
+            console.log(event.data);
+
+            copy(event.data.toString());
+          }),
+        },
+        onError: {
+          target: "#skibbl.error",
+        },
+      },
+    },
+    onClipBoard: {
+      type: "final",
+    },
+  },
+};
+
+var fetchListMachine = Machine(
   {
-    id: "fetch",
-    initial: "idle",
+    id: "skibbl",
+    initial: "intitalFetch",
     context: {
       failCount: 0,
       word: "",
@@ -99,29 +158,17 @@ const fetchListsMachine = Machine(
       groupName: getGroupName || "test",
     },
     states: {
-      idle: {
-        invoke: {
-          id: "fetch-group",
-          autoForward: true,
-          src: "invokeGetWordByGroup",
-          onDone: {
-            target: "entering",
-            actions: assign((context, event) => {
-              return {
-                words: event.data,
-              };
-            }),
-          },
-          onError: {
-            target: "newGroup",
-          },
-        },
-      },
-      newGroup,
-      entering,
+      intitalFetch,
       error: {
         type: "final",
       },
+      entering,
+      newGroup,
+      listToClipBoard,
+    },
+    on: {
+      NEW_GROUP: "newGroup",
+      GET_LIST: "listToClipBoard",
     },
   },
   {
@@ -129,6 +176,14 @@ const fetchListsMachine = Machine(
       invokeGetWordByGroup: ({ groupName }, event) => getWordByGroup(groupName),
       invokeAddWordToGroup: ({ groupName }, { word }) =>
         addWord(word, groupName),
+    },
+    actions: {
+      reset: assign((context, event) => {
+        return {
+          word: "",
+          words: event.data,
+        };
+      }),
     },
   }
 );

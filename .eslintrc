@@ -1,0 +1,5 @@
+{
+  "array-element-newline": ["error", { "minItems": 3 }],
+  "object-curly-newline": ["error", { "minItems": 3 }],
+  "function-paren-newline": ["error", "never"]
+}

@@ -5,15 +5,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Skribbl lists</title>
+  <script src="setUp.js"></script>
 </head>
 
 <body>
   Skribbl lists
   <div id="root"></div>
 
-  <script src="https://unpkg.com/react@^16/umd/react.production.min.js"></script>
+  <form id="add-word-to-group">
+    <input id="new-word" type="text" />
+    <input type="submit" />
+  </form>
+  <button id="copy-list" >
+    Copy list to clipboard
+  </button>
+
+  <script src="https://unpkg.com/react@^16/umd/react.production.min.js">
+
+  </script>
   <script src="https://unpkg.com/xstate@4.8.0/dist/xstate.js"></script>
-  <script src="index.js"></script>
+  <script src="./machines/fetchMachine.js"></script>
+  <script src="./index.js"></script>
+
 </body>
 
 </html>

@@ -1,3 +1,1 @@
-console.log('hey')
-
-var groupName = location.hash.match(/(?<=\#\/).+/)
+var groupName = location.hash.match(/(?<=\#\/).+/);

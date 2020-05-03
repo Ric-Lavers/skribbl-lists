@@ -5,9 +5,47 @@
 
 const { createMachine, interpret } = XState;
 
+const groupNameEl = document.getElementById("group-name");
+const addWordForm = document.getElementById("add-word-to-group");
+const input = addWordForm.querySelector('input[type="text"]');
+const submit = addWordForm.querySelector('input[type="submit"]');
+
+const copyListButton = document.getElementById("copy-list");
+const numOfEntriesEl = document.getElementById("num-of-entires");
+
+function setGroupName(name) {
+  if (groupNameEl.innerText !== name) {
+    groupNameEl.innerText = name;
+  }
+}
+
+function setNumOfEntries(length) {
+  if (numOfEntriesEl.innerText !== length) {
+    numOfEntriesEl.innerText = length;
+  }
+}
+
 const fetchListService = interpret(fetchListMachine)
   .onTransition((state) => {
     // console.log("onTransition", state.value, state);
+    if (
+      state.matches({
+        entering: "idle",
+      })
+    ) {
+      const { words, groupName } = state.context;
+      setGroupName(groupName);
+      setNumOfEntries(words.length);
+      input.value = "";
+    }
+
+    submit.toggleAttribute(
+      "disabled",
+      state.matches({
+        entering: "loading",
+      })
+    );
+
     if (state.changed) {
       // console.log(state)
       console.log(state.value, state.context);
@@ -17,10 +55,7 @@ const fetchListService = interpret(fetchListMachine)
 
 window["service"] = fetchListService;
 
-const addWordButton = document.getElementById("add-word-to-group");
-const copyListButton = document.getElementById("copy-list");
-
-addWordButton.addEventListener("submit", async (event) => {
+addWordForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const word = document.getElementById("new-word").value.trim();
 
@@ -35,87 +70,19 @@ copyListButton.addEventListener("click", (event) => {
   fetchListService.send("GET_LIST");
 });
 
-/* 
+const newGroupForm = document.getElementById("new-group");
+const addGroup = document.getElementById("add-group");
+const newGroupInput = document.getElementById("new-group__input");
 
+newGroupForm.addEventListener("click", (event) => {
+  event.preventDefault();
+  addGroup.style.display = addGroup.style.display === "none" ? "block" : "none";
+});
 
-
-
-
-
-
-
-
-
-*/
-// const increment = (context) => {
-//   console.log("increment");
-//   return context.count + 1;
-// };
-// const decrement = (context) => {
-//   console.log("decrement");
-//   return context.count - 1;
-// };
-// const counterMachine = Machine(
-//   {
-//     initial: "inactive",
-//     context: {
-//       count: 9,
-//     },
-//     states: {
-//       inactive: {
-//         invoke: {
-//           id: "fetch-group",
-//           autoForward: true,
-//           src: "invokeGetWordByGroup",
-//           /*src:
-//              () => {
-//             return new Promise((res) =>
-//               setTimeout(() => {
-//                 res("data");
-//               }, 500)
-//             );
-//           } */
-//           onDone: {
-//             target: "active",
-//             actions: assign((context, event) => {
-//               console.log(event.data);
-//             }),
-//           },
-//           onError: {
-//             target: "active",
-//           },
-//         },
-//       },
-//       active: {
-//         on: {
-//           INC: {
-//             actions: assign({
-//               count: increment,
-//             }),
-//           },
-//           DEC: {
-//             actions: assign({
-//               count: decrement,
-//             }),
-//           },
-//         },
-//       },
-//     },
-//   },
-//   {
-//     services: {
-//       invokeGetWordByGroup: ({ groupName }, event) => getWordByGroup(groupName),
-//     },
-//   }
-// );
-
-// const counterService = interpret(fetchListMachine)
-//   .onTransition((state) => console.log(state.context))
-//   .start();
-// // ...
-
-// // assume context is { count: 9 }
-// counterService.send("INC");
-// // => 10
-
-// counterService.send("INC");
+addGroup.addEventListener("submit", (event) => {
+  event.preventDefault();
+  fetchListService.send({
+    type: "NEW_GROUP",
+    groupName: newGroupInput.value,
+  });
+});

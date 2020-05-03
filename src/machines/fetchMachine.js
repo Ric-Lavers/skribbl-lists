@@ -1,11 +1,23 @@
 // https://xstate.js.org/viz/?gist=469032a40c65d4f2532d4838c4191c9a&groupName=test
 const { assign, Machine } = XState;
+const base_url =
+  "mongodb://rlavers:Boost#beat26@ds143131.mlab.com:43131/skribbl";
 
-const getGroupName = location.hash && location.hash.slice(1);
+function checkForError(res) {
+  if (res.status >= 400 && res.status < 600) {
+    throw res.json();
+  }
+}
+
+const getGroupName = location.hash && location.hash.slice(2);
+
 const getWordByGroup = (groupName = "test") => {
   return fetch(
     `http://localhost:8080/skibbl/group-words?groupName=${groupName}`
-  ).then((response) => response.json());
+  ).then((res) => {
+    checkForError(res);
+    return res.json();
+  });
 };
 
 const addWord = (word, groupName) => {
@@ -17,7 +29,10 @@ const addWord = (word, groupName) => {
         word,
       }),
     }
-  ).then((response) => response.json());
+  ).then((res) => {
+    checkForError(res);
+    return res.json();
+  });
 };
 async function copy(txt) {
   if (!navigator.clipboard) return;
@@ -28,22 +43,26 @@ async function copy(txt) {
     console.error("Failed to copy!", err);
   }
 }
-
 const newGroup = {
   initial: "idle",
   states: {
     idle: {
       on: {
-        NEW_GROUP: {
+        "": {
           target: "done",
           actions: (ctx, { groupName }) => {
-            console.log(`redirect to ${groupName}`);
+            location.hash = `/${groupName}`;
+            console.log("hash");
+            location.reload();
           },
         },
       },
     },
     done: {
       type: "final",
+      actions: () => {
+        console.log("done");
+      },
     },
   },
 };
@@ -74,11 +93,13 @@ const entering = {
         },
         onError: {
           target: "failure",
-          actions: assign(({ failCount }) => {
-            return {
-              failCount: failCount + 1,
-            };
-          }),
+          // actions: assign(({ failCount }, event) => {
+          //   console.log(event);
+
+          //   return {
+          //     failCount: failCount + 1,
+          //   };
+          // }),
         },
       },
     },
@@ -87,7 +108,7 @@ const entering = {
       on: {
         "": [
           {
-            target: "loading",
+            target: "idle",
             cond: ({ failCount }) => failCount < 3,
           },
           {
@@ -131,8 +152,6 @@ const listToClipBoard = {
         onDone: {
           target: "onClipBoard",
           actions: assign((context, event) => {
-            console.log(event.data);
-
             copy(event.data.toString());
           }),
         },
@@ -181,7 +200,7 @@ var fetchListMachine = Machine(
       reset: assign((context, event) => {
         return {
           word: "",
-          words: event.data,
+          words: event.data.words,
         };
       }),
     },

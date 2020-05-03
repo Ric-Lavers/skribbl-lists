@@ -1,32 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skribbl lists</title>
+    <script src="setUp.js"></script>
+    <style>
+      section {
+        margin: 16px 0;
+      }
+    </style>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Skribbl lists</title>
-  <script src="setUp.js"></script>
-</head>
+  <body>
+    <h1>Skribbl lists</h1>
+    <h2>Group name is <span id="group-name"></span></h2>
+    <h3>number of entries: <span id="num-of-entires"></span></h3>
 
-<body>
-  Skribbl lists
-  <div id="root"></div>
+    <section>
+      <form id="add-word-to-group">
+        <label>
+          Your phrase<br />
+          <input id="new-word" type="text" />
+        </label>
+        <input id="new-word__submit" type="submit" />
+      </form>
+      <button id="copy-list">
+        Copy list to clipboard
+      </button>
+    </section>
 
-  <form id="add-word-to-group">
-    <input id="new-word" type="text" />
-    <input type="submit" />
-  </form>
-  <button id="copy-list" >
-    Copy list to clipboard
-  </button>
+    <section>
+      <button id="new-group">
+        Create new group
+      </button>
+      <form id="add-group" style="display: none;">
+        <label>
+          Whats your group name <i>(one word)</i>?<br />
+          <input id="new-group__input" type="text" />
+        </label>
+        <input id="new-group__submit" type="submit" />
+      </form>
+    </section>
 
-  <script src="https://unpkg.com/react@^16/umd/react.production.min.js">
-
-  </script>
-  <script src="https://unpkg.com/xstate@4.8.0/dist/xstate.js"></script>
-  <script src="./machines/fetchMachine.js"></script>
-  <script src="./index.js"></script>
-
-</body>
-
+    <script src="https://unpkg.com/xstate@4.8.0/dist/xstate.js"></script>
+    <script src="./machines/fetchMachine.js"></script>
+    <script src="./index.js"></script>
+  </body>
 </html>

@@ -5,6 +5,7 @@
 
 const { createMachine, interpret } = XState;
 
+
 const groupNameEl = document.getElementById("group-name");
 const addWordForm = document.getElementById("add-word-to-group");
 const input = addWordForm.querySelector('input[type="text"]');

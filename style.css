@@ -1,0 +1,64 @@
+section {
+  margin: 16px 0;
+  background-color: white;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 10px 20px;
+}
+body {
+  background: url("./assets/images/background.png") center fixed;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.title {
+  display: flex;
+  justify-content: center;
+}
+
+.new-form {
+  text-align: left;
+  margin: 20px 0;
+}
+
+.btn {
+  color: #fff;
+  border-color: #46b8da;
+  padding: 10px 16px;
+  font-size: 18px;
+  line-height: 1.3333333;
+  border-radius: 6px;
+  width: 100%;
+}
+.copy-list {
+  background-color: #f0ad4e;
+  border-color: #eea236;
+  color: #fff;
+  position: absolute;
+  top: 30px;
+  right: 0;
+  height: 34px;
+}
+.phrase {
+  position: relative;
+}
+.create-group {
+  background-color: #5bc0de;
+}
+.submit {
+  background-color: #5cb85c;
+  border-color: #4cae4c;
+}
+.input-style {
+  display: block;
+  width: 100%;
+  height: 34px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  color: #555;
+  background-color: #fff;
+  background-image: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin: 10px 0;
+}

@@ -1,6 +1,10 @@
 // https://xstate.js.org/viz/?gist=469032a40c65d4f2532d4838c4191c9a&groupName=test
-const { assign, Machine } = XState;
-const base_url = "https://rics-server.now.sh/skibbl/group-words?groupName=test";
+const {
+  assign,
+  Machine
+} = XState;
+const base_url = "https://req-body.ric-lavers.now.sh";
+// const base_url = "http://localhost:3000";
 
 function checkForError(res) {
   if (res.status >= 400 && res.status < 600) {
@@ -8,11 +12,11 @@ function checkForError(res) {
   }
 }
 
-// const getGroupName = location.hash && location.hash.slice(2);
+var getGroupName = location.hash && location.hash.slice(2);
 
 const getWordByGroup = (groupName = "test") => {
   return fetch(
-    `http://localhost:3000/api/groups/getWordsByGroup?groupName=${groupName}`
+    `${base_url}/api/groups/getWordsByGroup?groupName=${groupName}`
   ).then((res) => {
     checkForError(res);
     return res.json();
@@ -21,8 +25,7 @@ const getWordByGroup = (groupName = "test") => {
 
 const addWord = (word, groupName) => {
   return fetch(
-    `http://localhost:3000/api/words/addWord?groupName=${groupName}`,
-    {
+    `${base_url}/api/words/addWord?groupName=${groupName}`, {
       method: "POST",
       body: JSON.stringify({
         word,
@@ -49,9 +52,10 @@ const newGroup = {
       on: {
         "": {
           target: "done",
-          actions: (ctx, { groupName }) => {
+          actions: (ctx, {
+            groupName
+          }) => {
             location.hash = `/${groupName}`;
-            console.log("hash");
             location.reload();
           },
         },
@@ -59,9 +63,6 @@ const newGroup = {
     },
     done: {
       type: "final",
-      actions: () => {
-        console.log("done");
-      },
     },
   },
 };
@@ -73,7 +74,9 @@ const entering = {
       on: {
         POST_WORD: {
           target: "loading",
-          actions: assign((context, { word }) => {
+          actions: assign((context, {
+            word
+          }) => {
             return {
               word,
             };
@@ -92,27 +95,24 @@ const entering = {
         },
         onError: {
           target: "failure",
-          // actions: assign(({ failCount }, event) => {
-          //   console.log(event);
 
-          //   return {
-          //     failCount: failCount + 1,
-          //   };
-          // }),
         },
       },
     },
 
     failure: {
       on: {
-        "": [
-          {
+        "": [{
             target: "idle",
-            cond: ({ failCount }) => failCount < 3,
+            cond: ({
+              failCount
+            }) => failCount < 3,
           },
           {
             target: "#skibbl.error",
-            cond: ({ failCount }) => failCount >= 3,
+            cond: ({
+              failCount
+            }) => failCount >= 3,
           },
         ],
       },
@@ -165,43 +165,51 @@ const listToClipBoard = {
   },
 };
 
-var fetchListMachine = Machine(
-  {
-    id: "skibbl",
-    initial: "intitalFetch",
-    context: {
-      failCount: 0,
-      word: "",
-      words: [],
-      groupName: getGroupName || "test",
-    },
-    states: {
-      intitalFetch,
-      error: {
-        type: "final",
-      },
-      entering,
-      newGroup,
-      listToClipBoard,
-    },
-    on: {
-      NEW_GROUP: "newGroup",
-      GET_LIST: "listToClipBoard",
-    },
+var fetchListMachine = Machine({
+  id: "skibbl",
+  initial: "intitalFetch",
+  context: {
+    failCount: 0,
+    word: "",
+    words: [],
+    groupName: getGroupName || "test",
   },
-  {
-    services: {
-      invokeGetWordByGroup: ({ groupName }, event) => getWordByGroup(groupName),
-      invokeAddWordToGroup: ({ groupName }, { word }) =>
-        addWord(word, groupName),
+  states: {
+    intitalFetch,
+    error: {
+      type: "final",
     },
-    actions: {
-      reset: assign((context, event) => {
-        return {
-          word: "",
-          words: event.data.words,
-        };
-      }),
-    },
-  }
-);
+    entering,
+    newGroup,
+    listToClipBoard,
+  },
+  on: {
+    NEW_GROUP: "newGroup",
+    GET_LIST: "listToClipBoard",
+  },
+}, {
+  services: {
+    invokeGetWordByGroup: ({
+      groupName
+    }, event) => getWordByGroup(groupName),
+    invokeAddWordToGroup: ({
+        groupName
+      }, {
+        word
+      }) =>
+      addWord(word, groupName),
+  },
+  actions: {
+    reset: assign((context, event) => {
+      return {
+        word: "",
+        words: event.data.words,
+      };
+    }),
+  },
+});
+
+const obj = {
+  a: 1,
+  b: 2
+}

@@ -1,10 +1,6 @@
 // https://xstate.js.org/viz/?gist=469032a40c65d4f2532d4838c4191c9a&groupName=test
-const {
-  assign,
-  Machine
-} = XState;
-const base_url =
-  "https://rics-server.now.sh/skibbl/group-words?groupName=test"
+const { assign, Machine } = XState;
+const base_url = "https://rics-server.now.sh/skibbl/group-words?groupName=test";
 
 function checkForError(res) {
   if (res.status >= 400 && res.status < 600) {
@@ -14,10 +10,9 @@ function checkForError(res) {
 
 // const getGroupName = location.hash && location.hash.slice(2);
 
-
 const getWordByGroup = (groupName = "test") => {
   return fetch(
-    `http://localhost:8080/skibbl/group-words?groupName=${groupName}`
+    `http://localhost:3000/api/groups/getWordsByGroup?groupName=${groupName}`
   ).then((res) => {
     checkForError(res);
     return res.json();
@@ -26,7 +21,8 @@ const getWordByGroup = (groupName = "test") => {
 
 const addWord = (word, groupName) => {
   return fetch(
-    `http://localhost:8080/skibbl/custom-words?groupName=${groupName}`, {
+    `http://localhost:3000/api/words/addWord?groupName=${groupName}`,
+    {
       method: "POST",
       body: JSON.stringify({
         word,
@@ -53,9 +49,7 @@ const newGroup = {
       on: {
         "": {
           target: "done",
-          actions: (ctx, {
-            groupName
-          }) => {
+          actions: (ctx, { groupName }) => {
             location.hash = `/${groupName}`;
             console.log("hash");
             location.reload();
@@ -79,9 +73,7 @@ const entering = {
       on: {
         POST_WORD: {
           target: "loading",
-          actions: assign((context, {
-            word
-          }) => {
+          actions: assign((context, { word }) => {
             return {
               word,
             };
@@ -113,17 +105,14 @@ const entering = {
 
     failure: {
       on: {
-        "": [{
+        "": [
+          {
             target: "idle",
-            cond: ({
-              failCount
-            }) => failCount < 3,
+            cond: ({ failCount }) => failCount < 3,
           },
           {
             target: "#skibbl.error",
-            cond: ({
-              failCount
-            }) => failCount >= 3,
+            cond: ({ failCount }) => failCount >= 3,
           },
         ],
       },
@@ -176,46 +165,43 @@ const listToClipBoard = {
   },
 };
 
-var fetchListMachine = Machine({
-  id: "skibbl",
-  initial: "intitalFetch",
-  context: {
-    failCount: 0,
-    word: "",
-    words: [],
-    groupName: getGroupName || "test",
-  },
-  states: {
-    intitalFetch,
-    error: {
-      type: "final",
+var fetchListMachine = Machine(
+  {
+    id: "skibbl",
+    initial: "intitalFetch",
+    context: {
+      failCount: 0,
+      word: "",
+      words: [],
+      groupName: getGroupName || "test",
     },
-    entering,
-    newGroup,
-    listToClipBoard,
+    states: {
+      intitalFetch,
+      error: {
+        type: "final",
+      },
+      entering,
+      newGroup,
+      listToClipBoard,
+    },
+    on: {
+      NEW_GROUP: "newGroup",
+      GET_LIST: "listToClipBoard",
+    },
   },
-  on: {
-    NEW_GROUP: "newGroup",
-    GET_LIST: "listToClipBoard",
-  },
-}, {
-  services: {
-    invokeGetWordByGroup: ({
-      groupName
-    }, event) => getWordByGroup(groupName),
-    invokeAddWordToGroup: ({
-        groupName
-      }, {
-        word
-      }) =>
-      addWord(word, groupName),
-  },
-  actions: {
-    reset: assign((context, event) => {
-      return {
-        word: "",
-        words: event.data.words,
-      };
-    }),
-  },
-});
+  {
+    services: {
+      invokeGetWordByGroup: ({ groupName }, event) => getWordByGroup(groupName),
+      invokeAddWordToGroup: ({ groupName }, { word }) =>
+        addWord(word, groupName),
+    },
+    actions: {
+      reset: assign((context, event) => {
+        return {
+          word: "",
+          words: event.data.words,
+        };
+      }),
+    },
+  }
+);

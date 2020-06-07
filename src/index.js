@@ -7,6 +7,7 @@ const {
 const groupNameEl = document.getElementById("group-name");
 const addWordForm = document.getElementById("add-word-to-group");
 const input = addWordForm.querySelector('input[type="text"]');
+const errorMessage = document.querySelector(".error-message small");
 const submit = addWordForm.querySelector('input[type="submit"]');
 
 const copyListButton = document.getElementById("copy-list");
@@ -26,7 +27,6 @@ function setNumOfEntries(length) {
 
 const fetchListService = interpret(fetchListMachine)
   .onTransition((state) => {
-    ;
     if (
       state.matches({
         entering: "idle",
@@ -47,6 +47,7 @@ const fetchListService = interpret(fetchListMachine)
         entering: "loading",
       })
     );
+    
 
     if (state.changed) {
       // console.log(state)
@@ -57,9 +58,29 @@ const fetchListService = interpret(fetchListMachine)
 
 window["service"] = fetchListService;
 
+function inValidMessage(phrase) {
+  let msg =''
+  if(phrase.match(/\b\w{31,}\b/)){
+    msg = 'Sorry 30 character limit please'
+  }
+  if(phrase.match(/,/)){
+    msg = 'oh gee no commas please'
+  }
+  // returns a empty string if valid
+  return msg
+}
+
+input.addEventListener("keydown", (event) => {
+  const word = event.target.value
+  const msg =inValidMessage(word)
+
+  errorMessage.innerText = msg
+})
 addWordForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const word = document.getElementById("new-word").value.trim();
+
+  if(inValidMessage(word))return
 
   fetchListService.send({
     type: "POST_WORD",

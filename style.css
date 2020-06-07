@@ -38,6 +38,12 @@ body {
   top: 30px;
   right: 0;
   height: 34px;
+  width: 4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .8em;
+  cursor: pointer;
 }
 .phrase {
   position: relative;
@@ -48,6 +54,9 @@ body {
 .submit {
   background-color: #5cb85c;
   border-color: #4cae4c;
+}
+.submit:disabled {
+  background-color: #555;
 }
 .input-style {
   display: block;
@@ -60,5 +69,9 @@ body {
   background-image: none;
   border: 1px solid #ccc;
   border-radius: 4px;
-  margin: 10px 0;
+  margin-top: 10px;
+}
+.error-message {
+  color: #eea236;
+  margin-bottom: 10px;
 }

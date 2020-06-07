@@ -3,6 +3,7 @@ const {
   assign,
   Machine
 } = XState;
+
 const base_url = "https://req-body-six.now.sh";
 // const base_url = "https://req-body.ric-lavers.now.sh";
 // const base_url = "http://localhost:3000";
@@ -144,16 +145,15 @@ const intitalFetch = {
 };
 
 const listToClipBoard = {
-  initial: "loading",
+  initial: "grouplist_To",
   states: {
-    loading: {
+    grouplist_To: {
       invoke: {
         src: "invokeGetWordByGroup",
         onDone: {
           target: "onClipBoard",
-          actions: assign((context, event) => {
-            copy(event.data.toString());
-          }),
+          actions: ["toClipBoard"]
+
         },
         onError: {
           target: "#skibbl.error",
@@ -165,6 +165,7 @@ const listToClipBoard = {
     },
   },
 };
+
 
 var fetchListMachine = Machine({
   id: "skibbl",
@@ -207,8 +208,15 @@ var fetchListMachine = Machine({
         words: event.data.words,
       };
     }),
+    
+    "toClipBoard": assign((context, event) => {
+            copy(event.data.toString());
+          }),
   },
-});
+});/*
+action : {
+  
+}*/
 
 const obj = {
   a: 1,
